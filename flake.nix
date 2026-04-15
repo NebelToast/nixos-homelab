@@ -21,6 +21,8 @@
           ./configuration.nix
           ./tailscale.nix
           ./planka.nix
+          ./glance.nix
+          ./yapblog.nix
           ./disko.nix
           ./hardware-configuration.nix
           ./sops.nix
