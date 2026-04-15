@@ -18,6 +18,10 @@
       "pipe-operators"
     ];
     auto-optimise-store = true;
+    trusted-users = [
+      "root"
+      "julius"
+    ];
   };
 
   time.timeZone = "Europe/Berlin";

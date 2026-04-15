@@ -3,7 +3,7 @@
 let
   dockerBin = "${config.virtualisation.docker.package}/bin/docker";
   # Set this to your real public hostname, e.g. https://planka.example.com
-  plankaBaseUrl = "sillyned.de";
+  plankaBaseUrl = "https://planka.sillynerd.de";
 in
 {
   sops.secrets = {
@@ -11,12 +11,43 @@ in
     "planka-postgres-password" = { };
   };
 
+  sops.templates = {
+    "planka-app.env" = {
+      restartUnits = [ "docker-planka.service" ];
+      content = ''
+        DATABASE_URL=postgresql://postgres@planka-postgres/planka
+        PGPASSWORD=${config.sops.placeholder."planka-postgres-password"}
+        SECRET_KEY=${config.sops.placeholder."planka-secret-key"}
+      '';
+    };
+
+    "planka-postgres.env" = {
+      restartUnits = [
+        "docker-planka-postgres.service"
+        "docker-planka.service"
+      ];
+      content = ''
+        POSTGRES_PASSWORD=${config.sops.placeholder."planka-postgres-password"}
+      '';
+    };
+  };
+
   virtualisation = {
     docker.enable = true;
     oci-containers.backend = "docker";
   };
 
-  networking.firewall.allowedTCPPorts = [ 3000 ];
+  networking.firewall.allowedTCPPorts = [
+    80
+    443
+  ];
+
+  services.caddy = {
+    enable = true;
+    virtualHosts."planka.sillynerd.de".extraConfig = ''
+      reverse_proxy 127.0.0.1:3000
+    '';
+  };
 
   systemd.services.planka-prepare = {
     description = "Prepare Planka runtime and networking";
@@ -37,13 +68,10 @@ in
       image = "postgres:16-alpine";
       autoStart = true;
       extraOptions = [ "--network=planka" ];
-      volumes = [
-        "planka-db-data:/var/lib/postgresql/data"
-        "${config.sops.secrets."planka-postgres-password".path}:/run/secrets/postgres_password:ro"
-      ];
+      volumes = [ "planka-db-data:/var/lib/postgresql/data" ];
+      environmentFiles = [ config.sops.templates."planka-postgres.env".path ];
       environment = {
         POSTGRES_DB = "planka";
-        POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password";
       };
     };
 
@@ -51,18 +79,12 @@ in
       image = "ghcr.io/plankanban/planka:latest";
       autoStart = true;
       dependsOn = [ "planka-postgres" ];
-      ports = [ "3000:1337" ];
+      ports = [ "127.0.0.1:3000:1337" ];
       extraOptions = [ "--network=planka" ];
-      volumes = [
-        "planka-data:/app/data"
-        "${config.sops.secrets."planka-secret-key".path}:/run/secrets/secret_key:ro"
-        "${config.sops.secrets."planka-postgres-password".path}:/run/secrets/database_password:ro"
-      ];
+      volumes = [ "planka-data:/app/data" ];
+      environmentFiles = [ config.sops.templates."planka-app.env".path ];
       environment = {
         BASE_URL = plankaBaseUrl;
-        DATABASE_URL = "postgresql://postgres:\${DATABASE_PASSWORD}@planka-postgres/planka";
-        DATABASE_PASSWORD__FILE = "/run/secrets/database_password";
-        SECRET_KEY__FILE = "/run/secrets/secret_key";
       };
     };
   };
