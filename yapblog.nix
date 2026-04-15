@@ -1,8 +1,7 @@
 { ... }:
 
 let
-  # Set this to your real blog domain.
-  blogDomain = "yappblog.de";
+  blogDomain = "yapblog.de";
   blogRoot = "/var/lib/yapblog/site";
 in
 {
