@@ -1,0 +1,9 @@
+keys:
+  - &admin age1ye055j6px5axh0cgse82mznv4y533m3j9yefqacvuh2muyrf4fws59qftf
+  - &vps age17fluggjd2m9whatfa7d8hederlf4nsgdh3tk32g3g6g3sp8pkeqsw22vus
+creation_rules:
+  - path_regex: secrets.yaml
+    key_groups:
+      - age:
+        - *admin
+        - *vps
