@@ -21,6 +21,7 @@
           ./configuration.nix
           ./tailscale.nix
           ./planka.nix
+          ./tasktrove.nix
           ./glance.nix
           ./yapblog.nix
           ./disko.nix
