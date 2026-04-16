@@ -1,6 +1,7 @@
 { config, ... }:
 
 let
+  tasktroveDomain = "tasktrove.sillynerd.de";
   tasktrovePort = 3001;
 in
 
@@ -22,7 +23,7 @@ in
   virtualisation.oci-containers.containers.tasktrove = {
     image = "ghcr.io/dohsimpson/tasktrove:latest";
     autoStart = true;
-    ports = [ "0.0.0.0:${toString tasktrovePort}:3000" ];
+    ports = [ "127.0.0.1:${toString tasktrovePort}:3000" ];
     volumes = [
       "/var/lib/tasktrove:/app/data"
     ];
@@ -36,5 +37,10 @@ in
     "d /var/lib/tasktrove 0750 root root -"
   ];
 
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ tasktrovePort ];
+  services.caddy = {
+    enable = true;
+    virtualHosts.${tasktroveDomain}.extraConfig = ''
+      reverse_proxy 127.0.0.1:${toString tasktrovePort}
+    '';
+  };
 }
