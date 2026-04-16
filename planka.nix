@@ -2,13 +2,15 @@
 
 let
   dockerBin = "${config.virtualisation.docker.package}/bin/docker";
-  # Set this to your real public hostname, e.g. https://planka.example.com
   plankaBaseUrl = "https://planka.sillynerd.de";
+  plankaOidcIssuer = "https://code.fbi.h-da.de";
 in
 {
   sops.secrets = {
     "planka-secret-key" = { };
     "planka-postgres-password" = { };
+    "planka-oidc-client-id" = { };
+    "planka-oidc-client-secret" = { };
   };
 
   sops.templates = {
@@ -18,6 +20,11 @@ in
         DATABASE_URL=postgresql://postgres@planka-postgres/planka
         PGPASSWORD=${config.sops.placeholder."planka-postgres-password"}
         SECRET_KEY=${config.sops.placeholder."planka-secret-key"}
+        OIDC_ISSUER=${plankaOidcIssuer}
+        OIDC_CLIENT_ID=${config.sops.placeholder."planka-oidc-client-id"}
+        OIDC_CLIENT_SECRET=${config.sops.placeholder."planka-oidc-client-secret"}
+        OIDC_SCOPES=openid profile email
+        OIDC_IGNORE_ROLES=true
       '';
     };
 
