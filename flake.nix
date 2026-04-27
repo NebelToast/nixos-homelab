@@ -11,13 +11,10 @@
   };
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      ...
-    }@inputs:
+    { self, nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       nixosConfigurations.vps = nixpkgs.lib.nixosSystem {
@@ -38,7 +35,19 @@
         ];
       };
 
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.${system} = pkgs.nixfmt-tree;
+
+      checks.${system} = {
+        statix = pkgs.runCommand "statix" { buildInputs = [ pkgs.statix ]; } ''
+          statix check ${self}
+          touch $out
+        '';
+
+        deadnix = pkgs.runCommand "deadnix" { buildInputs = [ pkgs.deadnix ]; } ''
+          deadnix --fail ${self}
+          touch $out
+        '';
+      };
     };
 
 }
