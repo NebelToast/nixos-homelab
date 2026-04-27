@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, ... }:
 
 {
   programs.nh.enable = true;
@@ -11,7 +6,7 @@
     enable = true;
     extraArgs = "--keep 5 --keep-since 3d";
     dates = "daily";
-  } ;
+  };
   boot.loader.grub.enable = true;
 
   networking.networkmanager.enable = true;

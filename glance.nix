@@ -1,4 +1,4 @@
-{ ... }:
+_:
 
 let
   glanceDomain = "glance.sillynerd.de";
