@@ -56,20 +56,6 @@ in
     '';
   };
 
-  systemd.services.planka-prepare = {
-    description = "Prepare Planka runtime and networking";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" ];
-    wants = [ "docker.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      ${dockerBin} network inspect planka >/dev/null 2>&1 || ${dockerBin} network create planka
-    '';
-  };
-
   virtualisation.oci-containers.containers = {
     planka-postgres = {
       image = "postgres:16-alpine";
@@ -96,13 +82,29 @@ in
     };
   };
 
-  systemd.services.docker-planka-postgres = {
-    after = [ "planka-prepare.service" ];
-    requires = [ "planka-prepare.service" ];
-  };
+  systemd.services = {
+    planka-prepare = {
+      description = "Prepare Planka runtime and networking";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "docker.service" ];
+      wants = [ "docker.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        ${dockerBin} network inspect planka >/dev/null 2>&1 || ${dockerBin} network create planka
+      '';
+    };
 
-  systemd.services.docker-planka = {
-    after = [ "planka-prepare.service" ];
-    requires = [ "planka-prepare.service" ];
+    docker-planka-postgres = {
+      after = [ "planka-prepare.service" ];
+      requires = [ "planka-prepare.service" ];
+    };
+
+    docker-planka = {
+      after = [ "planka-prepare.service" ];
+      requires = [ "planka-prepare.service" ];
+    };
   };
 }
