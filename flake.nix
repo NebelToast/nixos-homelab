@@ -18,20 +18,10 @@
     in
     {
       nixosConfigurations.vps = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inherit inputs self;
-        };
+        specialArgs = { inherit inputs self; };
         modules = [
-          ./configuration.nix
-          ./tailscale.nix
-          ./planka.nix
-          ./tasktrove.nix
-          ./glance.nix
-          ./yapblog.nix
-          ./disko.nix
-          ./hardware-configuration.nix
-          ./sops.nix
-          inputs.disko.nixosModules.disko
+          ./hosts/vps/configuration.nix
+          ./hosts/vps/hardware-configuration.nix
         ];
       };
 

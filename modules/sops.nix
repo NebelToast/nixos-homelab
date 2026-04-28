@@ -1,4 +1,9 @@
-{ inputs, ... }:
+{
+  config,
+  inputs,
+  self,
+  ...
+}:
 
 {
   imports = [ inputs.sops-nix.nixosModules.sops ];
@@ -6,7 +11,7 @@
     age.sshKeyPaths = [
       "/etc/ssh/ssh_host_ed25519_key"
     ];
-    defaultSopsFile = ./secrets.yaml;
+    defaultSopsFile = "${self}/hosts/${config.networking.hostName}/secrets.yaml";
   };
 
 }
