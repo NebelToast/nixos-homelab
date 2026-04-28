@@ -1,6 +1,16 @@
-{ config, ... }:
-
+{ config, self, ... }:
 {
+  imports = [
+    "${self}/modules/sops.nix"
+    "${self}/modules/tailscale.nix"
+    "${self}/modules/planka.nix"
+    "${self}/modules/tasktrove.nix"
+    "${self}/modules/glance.nix"
+    "${self}/modules/yapblog.nix"
+  ];
+
+  networking.hostName = "vps";
+
   programs.nh.enable = true;
   programs.nh.clean = {
     enable = true;
